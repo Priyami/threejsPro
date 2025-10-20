@@ -1,21 +1,23 @@
-import './style.css'
-import * as THREE from 'three';
+import "./style.css";
+import * as THREE from "three";
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 100, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const camera = new THREE.PerspectiveCamera(
+  100,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
 
 const renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth, window.innerHeight );
-renderer.setAnimationLoop( animate );
-document.body.appendChild( renderer.domElement );
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-const geometry = new THREE.BoxGeometry( 3, 1, 1 );
-const material = new THREE.MeshBasicMaterial( { color: 0x00ff0 } );
-const cube = new THREE.Mesh( geometry, material );
-scene.add( cube );
-scene.background = new THREE.Color('white');
+const geometry = new THREE.BoxGeometry(1, 1, 1);
 
-camera.position.z = 2;
+scene.background = new THREE.Color("white");
+
+camera.position.z = 3;
 
 function makeInstance(geometry, color, x, y, z) {
   const material = new THREE.MeshPhongMaterial({
@@ -23,51 +25,61 @@ function makeInstance(geometry, color, x, y, z) {
     opacity: 0.5,
     transparent: true,
   });
- 
   const cube = new THREE.Mesh(geometry, material);
-  scene.add(cube);
- 
-  cube.position.set(x, y, z);
-  cube.rotation.x += 0.01;
-	cube.rotation.y += 0.01;
+  cube.position.set(x,y,z);
 
-	renderer.render( scene, camera );
+  scene.add(cube);
   return cube;
 }
-function animate() {
-
-	cube.rotation.x += 0.01;
-	cube.rotation.y += 0.01;
-
-	renderer.render( scene, camera );
-
-}
-
-
-
 
 
 function addLight(...pos) {
-  const color = 0xFFFFFF;
+  const color = 0xffffff;
   const intensity = 1;
   const light = new THREE.DirectionalLight(color, intensity);
   light.position.set(...pos);
   scene.add(light);
 }
 addLight(-1, 2, 4);
-addLight( 1, -1, -2);
+addLight(1, -1, -2);
+
+function hsl(h, s, l) {
+  return new THREE.Color().setHSL(h, s, l);
+}
 
 
+  const d = 0.8;
 
-function hsl( h, s, l ) {
+  const cubes = [
+            makeInstance(geometry, hsl(0 / 8, 1, 0.5), -d, -d, -d),
+            makeInstance(geometry, hsl(1 / 8, 1, 0.5), d, -d, -d),
+            makeInstance(geometry, hsl(2 / 8, 1, 0.5), d, d, -d),
+            makeInstance(geometry, hsl(3 / 8, 1, 0.5), -d, d, d),
+            makeInstance(geometry, hsl(4 / 8, 1, 0.5), -d, -d, d),
+            makeInstance(geometry, hsl(5 / 8, 1, 0.5), d, -d, d),
+            makeInstance(geometry, hsl(6 / 8, 1, 0.5), d, d, d),
+            makeInstance(geometry, hsl(7 / 8, 1, 0.5), -d, d, -d),
+            makeInstance(geometry, hsl(8 / 8, 1, 0.5), d, -d, d),
 
-		return ( new THREE.Color() ).setHSL( h, s, l );
+  ];
+
+function render( time ) {
+
+		time *= 0.001; // convert time to seconds
+
+		cubes.forEach( ( cube, ndx ) => {
+
+			const speed = 1 + ndx * .1;
+			const rot = time * speed;
+			cube.rotation.x = rot;
+			cube.rotation.y = rot;
+
+		} );
+
+		renderer.render( scene, camera );
+
+		requestAnimationFrame( render );
 
 	}
+  		requestAnimationFrame( render );
 
-	{
-
-		const d = 0.8;
-    makeInstance(geometry, hsl( 0 / 8, 1, .5 ), - d, - d, - d );
-    makeInstance( geometry, hsl( 1 / 8, 1, .5 ),  d, - d, - d );
-  }
