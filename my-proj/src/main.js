@@ -1,3 +1,4 @@
+import { OrbitControls } from "three/examples/jsm/Addons.js";
 import "./style.css";
 import * as THREE from "three";
 
@@ -15,71 +16,71 @@ document.body.appendChild(renderer.domElement);
 
 const geometry = new THREE.BoxGeometry(1, 1, 1);
 
-scene.background = new THREE.Color("white");
+scene.background = new THREE.Color("black");
 
 camera.position.z = 3;
 
 function makeInstance(geometry, color, x, y, z) {
-  const material = new THREE.MeshPhongMaterial({
+  const material = new THREE.MeshStandardMaterial({
     color,
-    opacity: 0.5,
-    transparent: true,
+    flatShading: true,
   });
   const cube = new THREE.Mesh(geometry, material);
-  cube.position.set(x,y,z);
+  const wireMat = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    wireframe: true,
+  });
+  const wireMesh = new THREE.Mesh(geometry, wireMat);
+  wireMesh.scale.setScalar(1.04);
+  cube.add(wireMesh);
+
+  cube.position.set(x, y, z);
 
   scene.add(cube);
   return cube;
 }
 
-
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.003;
 function addLight(...pos) {
-  const color = 0xffffff;
-  const intensity = 1;
+  const color = 0xcfffff;
+  const intensity = 2;
   const light = new THREE.DirectionalLight(color, intensity);
   light.position.set(...pos);
   scene.add(light);
 }
-addLight(-1, 2, 4);
-addLight(1, -1, -2);
+addLight(1, -2, 4);
 
 function hsl(h, s, l) {
   return new THREE.Color().setHSL(h, s, l);
 }
 
+const d = 0.8;
+const cubes = [
+  makeInstance(geometry, hsl(0 / 8, 1, 0.5), -d, -d, -d),
+  makeInstance(geometry, hsl(1 / 8, 1, 0.5), d, -d, -d),
+  makeInstance(geometry, hsl(2 / 8, 1, 0.5), d, d, -d),
+  makeInstance(geometry, hsl(3 / 8, 1, 0.5), -d, d, d),
+  // makeInstance(geometry, hsl(4 / 8, 1, 0.5), -d, -d, d),
+  // makeInstance(geometry, hsl(5 / 8, 1, 0.5), d, -d, d),
+  // makeInstance(geometry, hsl(6 / 8, 1, 0.5), d, d, d),
+  // makeInstance(geometry, hsl(7 / 8, 1, 0.5), -d, d, -d),
+  // makeInstance(geometry, hsl(8 / 8, 1, 0.5), d, -d, d),
+];
 
-  const d = 0.8;
+function render(time) {
+  time *= 0.0002; // convert time to seconds
 
-  const cubes = [
-            makeInstance(geometry, hsl(0 / 8, 1, 0.5), -d, -d, -d),
-            makeInstance(geometry, hsl(1 / 8, 1, 0.5), d, -d, -d),
-            makeInstance(geometry, hsl(2 / 8, 1, 0.5), d, d, -d),
-            makeInstance(geometry, hsl(3 / 8, 1, 0.5), -d, d, d),
-            makeInstance(geometry, hsl(4 / 8, 1, 0.5), -d, -d, d),
-            makeInstance(geometry, hsl(5 / 8, 1, 0.5), d, -d, d),
-            makeInstance(geometry, hsl(6 / 8, 1, 0.5), d, d, d),
-            makeInstance(geometry, hsl(7 / 8, 1, 0.5), -d, d, -d),
-            makeInstance(geometry, hsl(8 / 8, 1, 0.5), d, -d, d),
+  cubes.forEach((cube, ndx) => {
+    const speed = 1 + ndx * 0.1;
+    const rot = time * speed;
+    cube.rotation.x = rot;
+    cube.rotation.y = rot;
+  });
 
-  ];
+  renderer.render(scene, camera);
 
-function render( time ) {
-
-		time *= 0.001; // convert time to seconds
-
-		cubes.forEach( ( cube, ndx ) => {
-
-			const speed = 1 + ndx * .1;
-			const rot = time * speed;
-			cube.rotation.x = rot;
-			cube.rotation.y = rot;
-
-		} );
-
-		renderer.render( scene, camera );
-
-		requestAnimationFrame( render );
-
-	}
-  		requestAnimationFrame( render );
-
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
